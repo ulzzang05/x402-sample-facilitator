@@ -25,7 +25,7 @@ app.use(
     {
       "GET /premium-content": { price: "$0.01", network: "base-sepolia" },
     },
-    { url: `http://localhost:${PORT}/facilitator` }
+    { url: `${process.env.RAILWAY_PUBLIC_DOMAIN || 'http://localhost:'+ PORT}/facilitator` }
   )
 );
 
