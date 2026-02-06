@@ -25,7 +25,9 @@ app.use(
     {
       "GET /premium-content": { price: "$0.01", network: "base-sepolia" },
     },
-    { url: `${process.env.RAILWAY_PUBLIC_DOMAIN || 'http://localhost:'+ PORT}/facilitator` }
+    { url: `${process.env.RENDER_EXTERNAL_URL || 'http://localhost:'+ PORT}/facilitator` },
+
+    {payTo: RECEIVER_WALLET, routes: {"GET /premium-content": {price: "$0.01", network: "base-sepolia"}}}
   )
 );
 
