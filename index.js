@@ -10,33 +10,35 @@ app.use(express.json());
 const PORT = process.env.PORT || 4021;
 const RECEIVER_WALLET = process.env.WALLET_ADDRESS;
 
-// facilitator 
+// 1. THE FACILITATOR
+// Ensure there are no typos in these keys.
 const facilitator = new Facilitator({
-  evmPrivateKey: process.env.PRIVATE_KEY, 10
-  networks: [baseSepolia], 
+  evmPrivateKey: process.env.PRIVATE_KEY,
+  evmNetworks: [baseSepolia], // Use evmNetworks as per the README
 });
 
-// facilitator 
+// Exposes the required facilitator endpoints
 createExpressAdapter(facilitator, app, "/facilitator");
 
+// 2. THE PAYWALL (The 3-Argument Fix from seller.js)
+// This order stops the "accepts" in routes TypeError
 app.use(paymentMiddleware(
-  RECEIVER_WALLET, 
-  {                
-    "GET /premium-content": {
-      price: "$0.01",
-      network: "base-sepolia"
+  RECEIVER_WALLET, // Arg 1: Receiver Wallet Address String
+  {                // Arg 2: Route Config Object
+    "GET /premium-content": { 
+      price: "$0.01", 
+      network: "base-sepolia" 
     }
   },
-  {                
-    url: `${process.env.RENDER_EXTERNAL_URL}/facilitator`
+  {                // Arg 3: Facilitator URL Object
+    url: `${process.env.RENDER_EXTERNAL_URL}/facilitator` 
   }
 ));
-
 
 app.get("/premium-content", (req, res) => {
   res.send({ 
     message: "🔓 Access Granted!",
-    content: "Success is built one fixed error at a time."
+    content: "The Human Calculator Masterclass: You pushed through the hardest part."
   });
 });
 
