@@ -18,11 +18,13 @@ if (!RECEIVER_WALLET || !PRIVATE_KEY) {
   throw new Error("Missing required environment variables");
 }
 
-// 1. THE FACILITATOR
+// 1. THE FACILITATOR - WITH EXACT SCHEME REGISTERED
 const facilitator = new Facilitator({
   evmPrivateKey: PRIVATE_KEY,
   evmNetworks: [baseSepolia],
 });
+
+facilitator.register("eip155:84532", new ExactEvmScheme());
 
 createExpressAdapter(facilitator, app, "/facilitator");
 
@@ -34,7 +36,7 @@ const facilitatorClient = new HTTPFacilitatorClient({
 const server = new x402ResourceServer(facilitatorClient)
   .register("eip155:84532", new ExactEvmScheme());
 
-// 3. THE PAYWALL - CORRECT FORMAT
+// 3. THE PAYWALL
 app.use(
   paymentMiddleware(
     {
@@ -43,7 +45,7 @@ app.use(
           {
             scheme: "exact",
             price: "$0.01", 
-            network: "eip155:84532",  // Base Sepolia
+            network: "eip155:84532",
             payTo: RECEIVER_WALLET
           }
         ],
@@ -61,5 +63,7 @@ app.get("/premium-content", (req, res) => {
     content: "The Human Calculator Masterclass: You pushed through the hardest part."
   });
 });
+
+app.listen(PORT, () => console.log(`🚀 Hybrid Node live on port ${PORT}`));});
 
 app.listen(PORT, () => console.log(`🚀 Hybrid Node live on port ${PORT}`));
