@@ -12,32 +12,31 @@ const RECEIVER_WALLET = process.env.WALLET_ADDRESS;
 
 // facilitator 
 const facilitator = new Facilitator({
-  evmPrivateKey: process.env.PRIVATE_KEY, 
+  evmPrivateKey: process.env.PRIVATE_KEY, 10
   networks: [baseSepolia], 
 });
 
-
+// facilitator 
 createExpressAdapter(facilitator, app, "/facilitator");
 
-// paywall
 app.use(paymentMiddleware(
   RECEIVER_WALLET, 
   {                
-    "GET /premium-content": { 
-      price: "$0.01", 
-      network: "base-sepolia" 
+    "GET /premium-content": {
+      price: "$0.01",
+      network: "base-sepolia"
     }
   },
   {                
-    url: `${process.env.RENDER_EXTERNAL_URL}/facilitator` 
+    url: `${process.env.RENDER_EXTERNAL_URL}/facilitator`
   }
 ));
 
-// route
+
 app.get("/premium-content", (req, res) => {
   res.send({ 
     message: "🔓 Access Granted!",
-    content: "The Human Calculator Masterclass: You solved the integration."
+    content: "Success is built one fixed error at a time."
   });
 });
 
