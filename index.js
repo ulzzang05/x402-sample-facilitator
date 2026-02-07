@@ -1,6 +1,8 @@
 import express from "express";
-import { paymentMiddleware } from "@x402/express";
+import { paymentMiddleware, x402ResourceServer } from "@x402/express";
 import { Facilitator, createExpressAdapter } from "x402-open";
+import { ExactEvmScheme } from "@x402/evm/exact/server";
+import { HTTPFacilitatorClient } from "@x402/core/server";
 import { baseSepolia } from "viem/chains";
 import 'dotenv/config';
 
@@ -24,19 +26,34 @@ const facilitator = new Facilitator({
 
 createExpressAdapter(facilitator, app, "/facilitator");
 
-// 2. THE PAYWALL - CORRECTED ORDER
-app.use(paymentMiddleware(
-  {
-    "GET /premium-content": { 
-      price: "$0.01", 
-      network: "base-sepolia",
-      receiver: RECEIVER_WALLET  // Receiver goes INSIDE the route config
-    }
-  },
-  {
-    url: `${FACILITATOR_URL}/facilitator` 
-  }
-));
+// 2. CREATE RESOURCE SERVER
+const facilitatorClient = new HTTPFacilitatorClient({
+  url: `${FACILITATOR_URL}/facilitator`
+});
+
+const server = new x402ResourceServer(facilitatorClient)
+  .register("eip155:84532", new ExactEvmScheme());
+
+// 3. THE PAYWALL - CORRECT FORMAT
+app.use(
+  paymentMiddleware(
+    {
+      "GET /premium-content": { 
+        accepts: [
+          {
+            scheme: "exact",
+            price: "$0.01", 
+            network: "eip155:84532",  // Base Sepolia
+            payTo: RECEIVER_WALLET
+          }
+        ],
+        description: "The Human Calculator Masterclass access",
+        mimeType: "application/json"
+      }
+    },
+    server
+  )
+);
 
 app.get("/premium-content", (req, res) => {
   res.send({ 
