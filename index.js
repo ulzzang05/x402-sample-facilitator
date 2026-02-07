@@ -1,7 +1,8 @@
-import express from "express";
+pimport express from "express";
 import { paymentMiddleware } from "@x402/express";
 import { Facilitator, createExpressAdapter } from "x402-open";
 import { baseSepolia } from "viem/chains";
+import {HTTPFacilitatorClient} from "x402/core";
 import 'dotenv/config';
 
 const app = express();
@@ -31,6 +32,24 @@ app.use(
     { url: `${process.env.RENDER_EXTERNAL_URL}/facilitator` }
   )
 );
+
+const facilitatorClient = new HTTPFacilitatorClient({ 
+    url: `${process.env.RENDER_EXTERNAL_URL}/facilitator` 
+});
+
+
+app.use(
+  paymentMiddleware(
+    {
+      payTo: RECEIVER_WALLET,
+      routes: {
+        "GET /premium-content": { price: "$0.01", network: "base-sepolia" }
+      }
+    },
+    facilitatorClient 
+  )
+);
+
 
 
 app.get("/premium-content", (req, res) => {
