@@ -10,7 +10,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 4021;
 const RECEIVER_WALLET = process.env.WALLET_ADDRESS;
 
-// STEP 1: DEPLOY THE FACILITATOR
+// FACILITATOR
 const facilitator = new Facilitator({
   evmPrivateKey: process.env.PRIVATE_KEY, 
   evmNetworks: [baseSepolia],
@@ -18,18 +18,20 @@ const facilitator = new Facilitator({
 
 createExpressAdapter(facilitator, app, "/facilitator");
 
-// STEP 2: THE PAYWALL
+// PAYWALL
 app.use(
   paymentMiddleware(
-    RECEIVER_WALLET,
     {
-      "GET /premium-content": { price: "$0.01", network: "base-sepolia" },
+      payTo: RECEIVER_WALLET,
+      routes: {
+        "GET /premium-content": { price: "$0.01", network: "base-sepolia" }
+      }
     },
-    { url: `${process.env.RENDER_EXTERNAL_URL || 'http://localhost:'+ PORT}/facilitator` },
-
-    {payTo: RECEIVER_WALLET, routes: {"GET /premium-content": {price: "$0.01", network: "base-sepolia"}}}
+    //Facilitator URL
+    { url: `${process.env.RENDER_EXTERNAL_URL}/facilitator` }
   )
 );
+
 
 app.get("/premium-content", (req, res) => {
   res.send({ 
