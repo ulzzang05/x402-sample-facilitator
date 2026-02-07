@@ -18,17 +18,15 @@ if (!RECEIVER_WALLET || !PRIVATE_KEY) {
   throw new Error("Missing required environment variables");
 }
 
-// 1. THE FACILITATOR - WITH EXACT SCHEME REGISTERED
+// 1. THE FACILITATOR - No .register() needed!
 const facilitator = new Facilitator({
   evmPrivateKey: PRIVATE_KEY,
   evmNetworks: [baseSepolia],
 });
 
-facilitator.register("eip155:84532", new ExactEvmScheme());
-
 createExpressAdapter(facilitator, app, "/facilitator");
 
-// 2. CREATE RESOURCE SERVER
+// 2. CREATE RESOURCE SERVER - Only register on the server
 const facilitatorClient = new HTTPFacilitatorClient({
   url: `${FACILITATOR_URL}/facilitator`
 });
@@ -61,6 +59,10 @@ app.get("/premium-content", (req, res) => {
   res.send({ 
     message: "🔓 Access Granted!",
     content: "The Human Calculator Masterclass: You pushed through the hardest part."
+  });
+});
+
+app.listen(PORT, () => console.log(`🚀 Hybrid Node live on port ${PORT}`));    content: "The Human Calculator Masterclass: You pushed through the hardest part."
   });
 });
 
