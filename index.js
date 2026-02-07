@@ -64,6 +64,4 @@ app.get("/premium-content", (req, res) => {
   });
 });
 
-app.listen(PORT, () => console.log(`🚀 Hybrid Node live on port ${PORT}`));});
-
 app.listen(PORT, () => console.log(`🚀 Hybrid Node live on port ${PORT}`));
