@@ -9,29 +9,32 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 4021;
 const RECEIVER_WALLET = process.env.WALLET_ADDRESS;
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const FACILITATOR_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+
+if (!RECEIVER_WALLET || !PRIVATE_KEY) {
+  throw new Error("Missing required environment variables");
+}
 
 // 1. THE FACILITATOR
-// Ensure there are no typos in these keys.
 const facilitator = new Facilitator({
-  evmPrivateKey: process.env.PRIVATE_KEY,
-  evmNetworks: [baseSepolia], // Use evmNetworks as per the README
+  evmPrivateKey: PRIVATE_KEY,
+  evmNetworks: [baseSepolia],
 });
 
-// Exposes the required facilitator endpoints
 createExpressAdapter(facilitator, app, "/facilitator");
 
-// 2. THE PAYWALL (The 3-Argument Fix from seller.js)
-// This order stops the "accepts" in routes TypeError
+// 2. THE PAYWALL - CORRECTED ORDER
 app.use(paymentMiddleware(
-  RECEIVER_WALLET, // Arg 1: Receiver Wallet Address String
-  {                // Arg 2: Route Config Object
+  {
     "GET /premium-content": { 
       price: "$0.01", 
-      network: "base-sepolia" 
+      network: "base-sepolia",
+      receiver: RECEIVER_WALLET  // Receiver goes INSIDE the route config
     }
   },
-  {                // Arg 3: Facilitator URL Object
-    url: `${process.env.RENDER_EXTERNAL_URL}/facilitator` 
+  {
+    url: `${FACILITATOR_URL}/facilitator` 
   }
 ));
 
