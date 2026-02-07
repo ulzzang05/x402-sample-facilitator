@@ -10,7 +10,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 4021;
 const RECEIVER_WALLET = process.env.WALLET_ADDRESS;
 
-// 1. THE FACILITATOR (Following x402-open patterns)
+// FACILITATOR 
 const facilitator = new Facilitator({
   evmPrivateKey: process.env.PRIVATE_KEY, 
   evmNetworks: [baseSepolia],
@@ -18,22 +18,22 @@ const facilitator = new Facilitator({
 
 createExpressAdapter(facilitator, app, "/facilitator");
 
-// 2. THE PAYWALL (Following the Vansh example architecture)
-// This structure handles the internal 'initialize' function automatically
+// paywall
 app.use(
   paymentMiddleware(
-    {
-      payTo: RECEIVER_WALLET,
-      routes: {
-        "GET /premium-content": { 
-            price: "$0.01", 
-            network: "base-sepolia" 
-        }
+    RECEIVER_WALLET, 
+    {                
+      "GET /premium-content": { 
+        price: "$0.01", 
+        network: "base-sepolia" 
       }
     },
-    { url: `${process.env.RENDER_EXTERNAL_URL}/facilitator` }
+    {                
+      url: `${process.env.RENDER_EXTERNAL_URL}/facilitator` 
+    }
   )
 );
+
 
 app.get("/premium-content", (req, res) => {
   res.send({ 
