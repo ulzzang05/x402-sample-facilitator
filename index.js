@@ -1,9 +1,7 @@
 import express from "express";
 import { paymentMiddleware, x402ResourceServer } from "@x402/express";
-import { Facilitator, createExpressAdapter } from "x402-open";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient } from "@x402/core/server";
-import { baseSepolia } from "viem/chains";
 import 'dotenv/config';
 
 const app = express();
@@ -11,30 +9,20 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 4021;
 const RECEIVER_WALLET = process.env.WALLET_ADDRESS;
-const PRIVATE_KEY = process.env.PRIVATE_KEY;
-const FACILITATOR_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
 
-if (!RECEIVER_WALLET || !PRIVATE_KEY) {
-  throw new Error("Missing required environment variables");
+if (!RECEIVER_WALLET) {
+  throw new Error("Missing WALLET_ADDRESS environment variable");
 }
 
-// 1. THE FACILITATOR
-const facilitator = new Facilitator({
-  evmPrivateKey: PRIVATE_KEY,
-  evmNetworks: [baseSepolia],
-});
-
-createExpressAdapter(facilitator, app, "/facilitator");
-
-// 2. CREATE RESOURCE SERVER
+// USE THE PUBLIC X402 FACILITATOR (no need to run your own!)
 const facilitatorClient = new HTTPFacilitatorClient({
-  url: `${FACILITATOR_URL}/facilitator`
+  url: "https://www.x402.org/facilitator"  // Public facilitator that supports Base Sepolia
 });
 
 const server = new x402ResourceServer(facilitatorClient)
   .register("eip155:84532", new ExactEvmScheme());
 
-// 3. THE PAYWALL
+// THE PAYWALL
 app.use(
   paymentMiddleware(
     {
@@ -62,4 +50,4 @@ app.get("/premium-content", (req, res) => {
   });
 });
 
-app.listen(PORT, () => console.log(`🚀 Hybrid Node live on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server live on port ${PORT}`));
